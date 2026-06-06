@@ -13,13 +13,12 @@ FROM apache/apisix:latest
 
 LABEL maintainer="devops@meu-projeto.com" \
       description="Apache APISIX standalone — sem etcd, deploy gratuito no Render" \
-      version="3.0.0"
+      version="3.0.1"
 
 COPY apisix_conf/config.yaml /usr/local/apisix/conf/config.yaml
 COPY apisix_conf/apisix.yaml /usr/local/apisix/conf/apisix.yaml
 
-EXPOSE 9080 7085
+EXPOSE 9080 7085 9443
 
-# Healthcheck via Status API dedicada na porta 7085
 HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=3 \
-  CMD curl -sf http://localhost:7085/status || exit 1
+  CMD curl -sf http://localhost:9080/health || exit 1
