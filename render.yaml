@@ -5,6 +5,7 @@ services:
     dockerfilePath: ./Dockerfile
     dockerContext: .
     plan: free
+    port: 9080
     envVars:
       - key: APISIX_STAND_ALONE
         value: "true"
