@@ -6,7 +6,7 @@ services:
     dockerContext: .
     plan: free
     envVars:
-      - key: APISIX_STAND_ALONE
-        value: "true"
-    healthCheckPath: /health
+      - key: PORT
+        value: "9080"
+    healthCheckPath: /
     autoDeploy: true
