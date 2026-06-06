@@ -1,0 +1,32 @@
+# =============================================================================
+# Arquivo: render.yaml
+# Blueprint do Render.com para deploy do APISIX standalone.
+#
+# Como usar:
+#   1. Suba este repositório no GitHub/GitLab
+#   2. Render Dashboard → New → Blueprint → conecte o repositório → Apply
+# =============================================================================
+
+services:
+  - type: web
+    name: apisix-gateway
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+
+    # O Render expõe somente uma porta externamente.
+    # Usamos 9080 (tráfego) como porta principal pública.
+    # A porta 7085 (status) é usada apenas internamente pelo healthcheck.
+    port: 9080
+
+    envVars:
+      - key: APISIX_STAND_ALONE
+        value: "true"
+
+    # O Render chama este path na porta declarada (9080) para health check.
+    # Como a Status API fica em 7085 (inacessível externamente no Render),
+    # criamos uma rota /health simples no apisix.yaml que responde 200.
+    healthCheckPath: /health
+
+    autoDeploy: true

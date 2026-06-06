@@ -1,0 +1,41 @@
+# =============================================================================
+# Arquivo: docker-compose.yml
+# Ambiente local — APISIX standalone (sem etcd).
+#
+# Uso:
+#   docker compose up --build -d
+#   docker compose logs -f
+#   docker compose down
+#
+# Testar após subir:
+#   curl http://localhost:7085/status        → {"status":"ok"}
+#   curl http://localhost:7085/status/ready  → {"status":"ok"}
+#   curl http://localhost:9080/hello         → Hello from APISIX Standalone!
+#   curl http://localhost:9080/httpbin/get   → resposta do httpbin.org
+# =============================================================================
+
+services:
+  apisix:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: apisix-gateway
+    restart: unless-stopped
+    ports:
+      - "9080:9080"   # tráfego HTTP
+      - "7085:7085"   # Status API (healthcheck)
+    volumes:
+      # Hot-reload: mudanças em apisix.yaml aplicadas em ~1s
+      - ./apisix_conf/config.yaml:/usr/local/apisix/conf/config.yaml:ro
+      - ./apisix_conf/apisix.yaml:/usr/local/apisix/conf/apisix.yaml:ro
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:7085/status"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
