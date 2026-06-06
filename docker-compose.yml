@@ -22,14 +22,14 @@ services:
     container_name: apisix-gateway
     restart: unless-stopped
     ports:
-      - "9080:9080"   # tráfego HTTP
-      - "7085:7085"   # Status API (healthcheck)
+      - "9080:9080"   # tráfego HTTP (porta principal)
+      - "7085:7085"   # Status API auxiliar
+      - "9443:9443"   # HTTPS (opcional)
     volumes:
-      # Hot-reload: mudanças em apisix.yaml aplicadas em ~1s
       - ./apisix_conf/config.yaml:/usr/local/apisix/conf/config.yaml:ro
       - ./apisix_conf/apisix.yaml:/usr/local/apisix/conf/apisix.yaml:ro
     healthcheck:
-      test: ["CMD", "curl", "-sf", "http://localhost:7085/status"]
+      test: ["CMD", "curl", "-sf", "http://localhost:9080/health"]
       interval: 15s
       timeout: 5s
       retries: 5
