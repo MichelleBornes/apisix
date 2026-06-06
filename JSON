@@ -1,0 +1,9 @@
+{
+  "uri": "/health",
+  "upstream": {
+    "type": "roundrobin",
+    "nodes": {
+      "127.0.0.1:9080": 1
+    }
+  }
+}
