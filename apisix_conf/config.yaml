@@ -5,19 +5,20 @@
 # =============================================================================
 
 apisix:
-  node_listen: 9080
+  node_listen:
+    - host: 0.0.0.0   
+      port: 9080
   enable_ipv6: false
-  # Status API — porta dedicada para healthcheck (separada do tráfego)
-  # Endpoints: GET :7085/status  e  GET :7085/status/ready
+  # Status API — porta auxiliar para healthcheck interno
   status:
-    ip: 0.0.0.0   # 0.0.0.0 para acessar de fora do container
+    ip: 0.0.0.0
     port: 7085
-
+ 
 deployment:
   role: data_plane
   role_data_plane:
     config_provider: yaml
-
+ 
 plugins:
   - real-ip
   - request-id
@@ -44,7 +45,7 @@ plugins:
   - file-logger
   - serverless-pre-function
   - serverless-post-function
-
+ 
 nginx_config:
   error_log: /dev/stderr
   error_log_level: warn
