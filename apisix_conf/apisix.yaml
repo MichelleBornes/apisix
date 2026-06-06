@@ -12,12 +12,13 @@
 
 routes:
   # ---------------------------------------------------------------------------
-  # /health — healthcheck na porta 9080, necessário para o Render.com
-  # Responde 200 OK com body simples via serverless function
+  # /health — healthcheck que o Render.com verifica (porta 9080)
+  # serverless-pre-function intercepta a requisição antes de chegar ao upstream
   # ---------------------------------------------------------------------------
   - uri: /health
     name: healthcheck-render
     methods: [GET, HEAD]
+    upstream_id: upstream-local
     plugins:
       serverless-pre-function:
         phase: rewrite
@@ -29,27 +30,48 @@ routes:
               ngx.say('{"status":"ok"}')
               ngx.exit(200)
             end
-
+ 
   # ---------------------------------------------------------------------------
-  # /hello — rota de exemplo
+  # / (raiz) — resposta 200 para evitar 404 no HEAD / do Render na inicialização
   # ---------------------------------------------------------------------------
-  - uri: /hello
-    name: rota-exemplo
-    methods: [GET]
+  - uri: /
+    name: root-redirect
+    methods: [GET, HEAD]
+    upstream_id: upstream-local
     plugins:
       serverless-pre-function:
         phase: rewrite
         functions:
           - |
             return function(conf, ctx)
+              ngx.status = 200
+              ngx.header["Content-Type"] = "application/json"
+              ngx.say('{"gateway":"APISIX","status":"running"}')
+              ngx.exit(200)
+            end
+ 
+  # ---------------------------------------------------------------------------
+  # /hello — rota de exemplo
+  # ---------------------------------------------------------------------------
+  - uri: /hello
+    name: rota-exemplo
+    methods: [GET]
+    upstream_id: upstream-local
+    plugins:
+      serverless-pre-function:
+        phase: rewrite
+        functions:
+          - |
+            return function(conf, ctx)
+              ngx.status = 200
               ngx.header["Content-Type"] = "text/plain"
               ngx.say("Hello from APISIX Standalone!")
               ngx.exit(200)
             end
-
+ 
   # ---------------------------------------------------------------------------
   # /httpbin/* — proxy reverso para httpbin.org (teste de roteamento)
-  # Acesse: http://localhost:9080/httpbin/get
+  # Acesse: https://<seu-app>.onrender.com/httpbin/get
   # ---------------------------------------------------------------------------
   - uri: /httpbin/*
     name: rota-httpbin
@@ -58,12 +80,18 @@ routes:
       proxy-rewrite:
         regex_uri: ["^/httpbin/(.*)", "/$1"]
     upstream_id: upstream-httpbin
-
+ 
 upstreams:
+  - id: upstream-local
+    name: local-dummy
+    type: roundrobin
+    nodes:
+      "127.0.0.1:9080": 1
+ 
   - id: upstream-httpbin
     name: httpbin
     type: roundrobin
     nodes:
       "httpbin.org:80": 1
-
+ 
 #END
