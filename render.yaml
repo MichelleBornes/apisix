@@ -2,19 +2,11 @@ services:
   - type: web
     name: apisix-gateway
     runtime: docker
-    repo: https://github.com/SEU_USUARIO/SEU_REPOSITORIO
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
     plan: free
-    
-    docker:
-      dockerfilePath: ./Dockerfile
-      dockerContext: .
-    
     envVars:
       - key: APISIX_STAND_ALONE
         value: "true"
-    
-    healthCheck:
-      path: /health
-      port: 9080
-    
+    healthCheckPath: /health
     autoDeploy: true
