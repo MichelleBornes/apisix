@@ -1,24 +1,20 @@
-# =============================================================================
-# Arquivo: render.yaml
-# Blueprint do Render.com para deploy do APISIX standalone.
-#
-# Como usar:
-#   1. Suba este repositório no GitHub/GitLab
-#   2. Render Dashboard → New → Blueprint → conecte o repositório → Apply
-# =============================================================================
-
 services:
   - type: web
     name: apisix-gateway
     runtime: docker
-    dockerfilePath: ./Dockerfile
-    dockerContext: .
+    repo: https://github.com/SEU_USUARIO/SEU_REPOSITORIO
     plan: free
-    port: 9080
-
+    
+    docker:
+      dockerfilePath: ./Dockerfile
+      dockerContext: .
+    
     envVars:
       - key: APISIX_STAND_ALONE
         value: "true"
-
-    healthCheckPath: /health
+    
+    healthCheck:
+      path: /health
+      port: 9080
+    
     autoDeploy: true
